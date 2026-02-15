@@ -1,0 +1,38 @@
+{
+  "name": "signin-engine",
+  "version": "1.0.0",
+  "description": "A comprehensive, secure, and easy-to-use sign-in authentication engine",
+  "main": "dist/signin-engine.cjs.js",
+  "module": "src/core/SignInEngine.js",
+  "browser": "dist/signin-engine.min.js",
+  "unpkg": "dist/signin-engine.min.js",
+  "jsdelivr": "dist/signin-engine.min.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "types",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"No tests specified\""
+  },
+  "keywords": [
+    "authentication",
+    "signin",
+    "login",
+    "security",
+    "jwt"
+  ],
+  "author": "Ahaduzzaman khan",
+  "license": "MIT",
+  "devDependencies": {
+    "esm": "^3.2.25",
+    "terser-webpack-plugin": "^5.3.16",
+    "webpack": "^5.105.1",
+    "webpack-cli": "^5.1.4"
+  }
+}

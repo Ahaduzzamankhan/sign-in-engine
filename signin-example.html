@@ -1,0 +1,133 @@
+<script>
+    // Initialize SignIn Engine
+    const engine = new SignInEngine({
+        secretKey: 'your-secret-key-here',
+        tokenExpiry: '24h'
+    });
+
+    engine.initialize();
+
+    function showTab(tabName) {
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(tab => {
+            if (tab.textContent.toLowerCase().includes(tabName)) {
+                tab.classList.add('active');
+            }
+        });
+        
+        document.getElementById('signin-form').classList.add('hidden');
+        document.getElementById('signup-form').classList.add('hidden');
+        document.getElementById('reset-form').classList.add('hidden');
+        
+        document.getElementById(`${tabName}-form`).classList.remove('hidden');
+    }
+
+    async function signIn() {
+        const email = document.getElementById('signin-email').value;
+        const password = document.getElementById('signin-password').value;
+        
+        const result = await engine.signIn('email', { email, password });
+        
+        if (result.success) {
+            localStorage.setItem('auth_token', result.token);
+            localStorage.setItem('user_data', JSON.stringify(result.user));
+            showUserInfo(result.user, result.token);
+            showSuccess('signin', 'Signed in successfully!');
+        } else {
+            showError('signin', result.error);
+        }
+    }
+
+    async function signUp() {
+        const username = document.getElementById('signup-username').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const confirm = document.getElementById('signup-confirm').value;
+        
+        if (password !== confirm) {
+            showError('signup', 'Passwords do not match');
+            return;
+        }
+        
+        const result = await engine.register({
+            username, 
+            email, 
+            password,
+            confirmPassword: confirm
+        });
+        
+        if (result.success) {
+            showSuccess('signup', 'Account created successfully! Please sign in.');
+            setTimeout(() => {
+                showTab('signin');
+                document.getElementById('signin-email').value = email;
+            }, 2000);
+        } else {
+            showError('signup', result.error);
+        }
+    }
+
+    function showUserInfo(user, token) {
+        document.getElementById('username').textContent = user.username || user.email;
+        document.getElementById('user-email').textContent = user.email;
+        document.getElementById('token-preview').textContent = token.substring(0, 20) + '...';
+        
+        document.getElementById('signin-form').classList.add('hidden');
+        document.getElementById('signup-form').classList.add('hidden');
+        document.getElementById('reset-form').classList.add('hidden');
+        document.getElementById('user-info').classList.remove('hidden');
+    }
+
+    async function signOut() {
+        const token = localStorage.getItem('auth_token');
+        await engine.signOut(token);
+        
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+        
+        document.getElementById('user-info').classList.add('hidden');
+        document.getElementById('signin-form').classList.remove('hidden');
+        showSuccess('signin', 'Signed out successfully');
+    }
+
+    async function verifyToken() {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            alert('No token found');
+            return;
+        }
+        const result = await engine.verifyToken(token);
+        alert(result.valid ? 'Token is valid!' : `Token invalid: ${result.error}`);
+    }
+
+    function showError(form, message) {
+        const element = document.getElementById(`${form}-error`);
+        element.textContent = message;
+        element.classList.remove('hidden');
+        setTimeout(() => element.classList.add('hidden'), 5000);
+    }
+
+    function showSuccess(form, message) {
+        const element = document.getElementById(`${form}-success`);
+        element.textContent = message;
+        element.classList.remove('hidden');
+        setTimeout(() => element.classList.add('hidden'), 5000);
+    }
+
+    // Check for existing session on load
+    window.onload = () => {
+        const token = localStorage.getItem('auth_token');
+        const userData = localStorage.getItem('user_data');
+        
+        if (token && userData) {
+            engine.verifyToken(token).then(result => {
+                if (result.valid) {
+                    showUserInfo(JSON.parse(userData), token);
+                } else {
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('user_data');
+                }
+            });
+        }
+    };
+</script>

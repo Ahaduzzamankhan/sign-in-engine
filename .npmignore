@@ -1,0 +1,10 @@
+node_modules/
+src/
+!.gitkeep
+*.log
+.DS_Store
+Thumbs.db
+webpack.*.js
+tests/
+example/
+*.map
